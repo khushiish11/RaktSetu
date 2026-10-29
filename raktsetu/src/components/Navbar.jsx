@@ -5,7 +5,7 @@ function Navbar() {
   const navLinks = [
     { path: "/", label: "Home" },
     { path: "/find-blood", label: "Find Blood" },
-    { path: "/register-blood", label: "Become a Donor" },
+    { path: "/register-donor", label: "Become a Donor" },
     { path: "/hospitals", label: "Hospitals" },
     { path: "/request-blood", label: "Request Blood" },
     { path: "/emergency", label: "🚨 Emergency" },
