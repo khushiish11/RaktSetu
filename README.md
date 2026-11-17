@@ -260,6 +260,30 @@ Developing RaktSetu has provided practical experience in:
 
 ---
 
+## 📸 Project Screenshots
+Here are some previews of the RaktSetu application.
+Home Page
+<img width="1883" height="913" alt="image" src="https://github.com/user-attachments/assets/6cd13036-8745-4ae1-9bfd-f4dc795ebcf7" />
+<img width="1881" height="912" alt="image" src="https://github.com/user-attachments/assets/28b2b11d-0a8b-419c-bbfa-fea453c91a8b" />
+
+Find Blood
+<img width="1882" height="922" alt="image" src="https://github.com/user-attachments/assets/79141843-6935-4ff0-9594-f6b708b40908" />
+
+Donor Registration
+<img width="1870" height="911" alt="image" src="https://github.com/user-attachments/assets/da281410-5adb-4fcc-8cd0-cc1ef76191b6" />
+
+Blood Request
+<img width="1872" height="906" alt="image" src="https://github.com/user-attachments/assets/42e8dee6-8001-4bef-831c-4da4cd81d90a" />
+
+User Profile
+<img width="1882" height="912" alt="image" src="https://github.com/user-attachments/assets/e4f27da2-9795-49e5-832a-bfe779e5a6e6" />
+
+Hospitals
+<img width="1877" height="897" alt="image" src="https://github.com/user-attachments/assets/0b7de688-698f-4137-be1f-d8764d582878" />
+
+Login
+<img width="1887" height="912" alt="image" src="https://github.com/user-attachments/assets/d5357d11-99d8-4dce-94fa-87f51f0bcfae" />
+
 ## 👩‍💻 Author
 
 **Khushi Sharma**
