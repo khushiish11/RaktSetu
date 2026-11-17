@@ -1,5 +1,13 @@
-import { Link, useLocation } from "react-router-dom";
+import { useState } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { useAuth } from '../Context/AuthContext';
 function Navbar() {
+  const { user, logout } = useAuth();
+const navigate = useNavigate();
+const [menuOpen, setMenuOpen] = useState(false);
+const initials = user
+  ? user.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()
+  : '';
   const location = useLocation();
 
   const navLinks = [
@@ -109,7 +117,51 @@ function Navbar() {
         </div>
 
         {/*Buttons*/}
-        <div
+        {user ? (
+  <div style={{ position: 'relative' }}>
+    <button onClick={() => setMenuOpen(!menuOpen)} style={{
+      display: 'flex', alignItems: 'center', gap: '10px',
+      padding: '6px 14px 6px 6px', backgroundColor: '#fff5f5',
+      border: '1.5px solid #fca5a5', borderRadius: '30px', cursor: 'pointer'
+    }}>
+      <span style={{
+        width: '34px', height: '34px', borderRadius: '50%',
+        backgroundColor: '#dc2626', color: 'white', fontSize: '13px',
+        fontWeight: '900', display: 'flex', alignItems: 'center',
+        justifyContent: 'center'
+      }}>{initials}</span>
+      <span style={{ fontSize: '13px', fontWeight: '800', color: '#0f172a' }}>
+        {user.name.split(' ')[0]}
+      </span>
+    </button>
+
+    {menuOpen && (
+      <div style={{
+        position: 'absolute', right: 0, top: '48px', width: '190px',
+        backgroundColor: 'white', borderRadius: '14px', padding: '8px',
+        boxShadow: '0 12px 30px rgba(0,0,0,0.15)', border: '1px solid #f1f5f9'
+      }}>
+        <div style={{ padding: '8px 12px', fontSize: '12px', color: '#64748b' }}>
+          {user.email}
+        </div>
+        <Link to="/profile" onClick={() => setMenuOpen(false)} style={{
+          display: 'block', padding: '10px 12px', borderRadius: '8px',
+          fontSize: '13px', fontWeight: '700', color: '#0f172a',
+          textDecoration: 'none'
+        }}>My Profile</Link>
+        <button onClick={() => { logout(); setMenuOpen(false); navigate('/'); }} style={{
+          width: '100%', textAlign: 'left', padding: '10px 12px',
+          borderRadius: '8px', fontSize: '13px', fontWeight: '700',
+          color: '#dc2626', backgroundColor: 'transparent',
+          border: 'none', cursor: 'pointer'
+        }}>Logout</button>
+      </div>
+    )}
+  </div>
+) : (
+  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+    {/* keep your existing Login and Register links exactly as they were */}
+     <div
           style={{
             display: "flex",
             alignItems: "center",
@@ -147,6 +199,8 @@ function Navbar() {
              display: 'inline-block'
             }} >Register</Link>
         </div>
+  </div>
+)}
       </nav>
     </>
   );

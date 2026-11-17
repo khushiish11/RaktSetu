@@ -1,13 +1,16 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { bloodGroups, cities } from '../data/dummyData';
+import API, { authHeaders } from '../api';
+import { useAuth } from '../Context/AuthContext';
 
 function RegisterDonor() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
-    name: '', bloodGroup: '', age: '',
-    gender: '', phone: '', email: '',
+    name: user ? user.name : '', bloodGroup: '', age: '',
+    gender: '', phone: '', email:  user ? user.email : '',
     city: '', area: '',
     lastDonationDate: '', agreed: false
   });
@@ -67,14 +70,34 @@ function RegisterDonor() {
     setStep(2);
   };
 
-  const handleSubmit = () => {
-    const stepErrors = validateStep2();
-    if (Object.keys(stepErrors).length > 0) {
-      setErrors(stepErrors);
+  const handleSubmit = async () => {
+  const stepErrors = validateStep2();
+  if (Object.keys(stepErrors).length > 0) {
+    setErrors(stepErrors);
+    return;
+  }
+
+  try {
+    const res = await fetch(`${API}/donors`,  {
+      method: 'POST',
+    headers: { 
+  'Content-Type': 'application/json',
+  ...authHeaders()
+},
+      body: JSON.stringify(formData)
+    });
+    const data = await res.json();
+
+    if (!res.ok) {
+      setErrors({ agreed: data.message });
       return;
     }
     setSubmitted(true);
-  };
+  } catch (err) {
+    setErrors({ agreed: 'Server not reachable. Is the backend running?' });
+  }
+  
+};
 
   const inp = (field) => ({
     width: '100%',
@@ -219,7 +242,7 @@ function RegisterDonor() {
             gap: '12px'
           }}>
             <button
-              onClick={() => navigate('/')}
+             onClick={() => navigate(user ? '/profile' : '/')}
               style={{
                 flex: 1,
                 padding: '13px',

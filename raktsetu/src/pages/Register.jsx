@@ -1,8 +1,11 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../Context/AuthContext';
+import API from '../api';
 
 function Register() {
   const navigate = useNavigate();
+  const { login } = useAuth();
   const [formData, setFormData] = useState({
     name: '', email: '', phone: '',
     password: '', confirmPassword: '',
@@ -58,20 +61,41 @@ function Register() {
   };
   const strength = getPasswordStrength();
 
-  const handleSubmit = () => {
-    const errs = validate();
-    if (Object.keys(errs).length > 0) {
-      setErrors(errs);
+const handleSubmit = async () => {
+  const errs = validate();
+  if (Object.keys(errs).length > 0) {
+    setErrors(errs);
+    return;
+  }
+
+  setLoading(true);
+  try {
+    const res = await fetch(`${API}/auth/register`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: formData.name,
+        email: formData.email,
+        phone: formData.phone,
+        password: formData.password,
+        role: formData.role
+      })
+    });
+    const data = await res.json();
+
+    if (!res.ok) {
+      setErrors({ email: data.message });
       return;
     }
-    setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
-      if (formData.role === 'donor')
-        navigate('/register-donor');
-      else navigate('/');
-    }, 1800);
-  };
+
+  login(data);
+navigate('/profile');
+  } catch (err) {
+    setErrors({ email: 'Server not reachable. Is the backend running?' });
+  } finally {
+    setLoading(false);
+  }
+};
 
   const inpStyle = (field) => ({
     width: '100%',

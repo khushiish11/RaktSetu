@@ -1,8 +1,11 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../Context/AuthContext';
+import API from '../api';
 
 function Login() {
   const navigate = useNavigate();
+  const { login } = useAuth();
   const [formData, setFormData] = useState({
     email: '', password: '', rememberMe: false
   });
@@ -34,18 +37,38 @@ function Login() {
     return e;
   };
 
-  const handleSubmit = () => {
-    const errs = validate();
-    if (Object.keys(errs).length > 0) {
-      setErrors(errs);
+const handleSubmit = async () => {
+  const errs = validate();
+  if (Object.keys(errs).length > 0) {
+    setErrors(errs);
+    return;
+  }
+
+  setLoading(true);
+  try {
+    const res = await fetch(`${API}/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email: formData.email,
+        password: formData.password
+      })
+    });
+    const data = await res.json();
+
+    if (!res.ok) {
+      setErrors({ password: data.message });
       return;
     }
-    setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
-      navigate('/');
-    }, 1800);
-  };
+
+   login(data);
+navigate('/profile');
+  } catch (err) {
+    setErrors({ password: 'Server not reachable' });
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <div style={{

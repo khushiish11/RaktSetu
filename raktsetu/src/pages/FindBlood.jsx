@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import { donors, bloodGroups, cities, searchDonors }
-    from '../data/dummyData';
+import ContactModal from '../components/ContactModel';
+import { donors, bloodGroups, cities, searchDonors }from '../data/dummyData';
+import API from '../api';
 
 function FindBlood() {
   const [bloodGroup, setBloodGroup] = useState('');
@@ -8,16 +9,26 @@ function FindBlood() {
   const [results, setResults] = useState([]);
   const [searched, setSearched] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [contact, setContact] = useState(null);
 
-  const handleSearch = () => {
-    setLoading(true);
-    setTimeout(() => {
-      const found = searchDonors(bloodGroup, city);
-      setResults(found);
-      setSearched(true);
-      setLoading(false);
-    }, 600);
-  };
+const handleSearch = async () => {
+  setLoading(true);
+  try {
+    const params = new URLSearchParams();
+    if (bloodGroup) params.append('bloodGroup', bloodGroup);
+    if (city) params.append('city', city);
+
+    const res = await fetch(`${API}/donors?${params}`);
+    const data = await res.json();
+
+    setResults(data);
+    setSearched(true);
+  } catch (err) {
+    console.error('Search failed:', err);
+  } finally {
+    setLoading(false);
+  }
+};
 
   const getInitials = (name) => {
     return name.split(' ')
@@ -452,7 +463,7 @@ function FindBlood() {
                 gap: '20px'
               }}>
                 {results.map((donor, index) => (
-                  <div key={donor.id} style={{
+                  <div key={donor._id} style={{
                     backgroundColor: 'white',
                     borderRadius: '20px',
                     padding: '28px',
@@ -649,9 +660,19 @@ function FindBlood() {
                       alignItems: 'center',
                       justifyContent: 'center',
                       gap: '8px'
-                    }}>
+                    }}
+  onClick={() => setContact({
+    name: donor.name,
+    phone: donor.phone,
+    bloodGroup: donor.bloodGroup,
+    subtitle: `${donor.area}, ${donor.city}`,
+    message: `I need ${donor.bloodGroup} blood. Can you help?`
+  })}
+ >
+  Contact Donor
+</button>
                       📞 Contact Donor
-                    </button>
+                  
                   </div>
                 ))}
               </div>
@@ -699,6 +720,7 @@ function FindBlood() {
           </div>
         )}
       </div>
+      <ContactModal person={contact} onClose={() => setContact(null)} />
     </div>
   );
 }

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import API, { authHeaders } from '../api';
 import { bloodGroups, cities }
     from '../data/dummyData';
 
@@ -43,14 +44,33 @@ function Emergency() {
     return e;
   };
 
-  const handleSubmit = () => {
-    const errs = validate();
-    if (Object.keys(errs).length > 0) {
-      setErrors(errs);
+const handleSubmit = async () => {
+  const errs = validate();
+  if (Object.keys(errs).length > 0) {
+    setErrors(errs);
+    return;
+  }
+
+  try {
+    const res = await fetch(`${API}/requests`, {
+      method: 'POST',
+     headers: { 'Content-Type': 'application/json', ...authHeaders() },
+      body: JSON.stringify({
+        ...formData,
+        requesterName: 'Emergency Request',
+        reason: 'Emergency'
+      })
+    });
+    if (!res.ok) {
+      const data = await res.json();
+      setErrors({ contactNumber: data.message });
       return;
     }
     setSubmitted(true);
-  };
+  } catch (err) {
+    setErrors({ contactNumber: 'Server not reachable' });
+  }
+};
 
   const inp = (field) => ({
     width: '100%',

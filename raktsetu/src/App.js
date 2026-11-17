@@ -9,9 +9,13 @@ import RequestBlood from './pages/RequestBlood';
 import Emergency from './pages/Emergency';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import { AuthProvider } from './Context/AuthContext';
+import ProtectedRoute from './components/ProtectedRoute';
+import Profile from './pages/Profile';
 
 function App() {
   return (
+<AuthProvider>
     <BrowserRouter>
       <Navbar />
       <Routes>
@@ -30,8 +34,12 @@ function App() {
             element={<Login/>} />
         <Route path="/register"
             element={<Register/>} />
+        <Route path="/profile" element={
+            <ProtectedRoute><Profile /></ProtectedRoute>
+          } />
       </Routes>
     </BrowserRouter>
+ </AuthProvider>
   );
 }
 

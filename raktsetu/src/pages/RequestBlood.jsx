@@ -1,11 +1,16 @@
-import { useState } from 'react';
+import { useState,useEffect } from 'react';
+import ContactModel from '../components/ContactModel';
+import API, { authHeaders } from '../api';
 import { bloodGroups, cities, bloodRequests }
     from '../data/dummyData';
+
+
 
 function RequestBlood() {
   const [filter, setFilter] = useState('All');
   const [searchGroup, setSearchGroup] = useState('');
   const [showForm, setShowForm] = useState(false);
+  const [contact, setContact] = useState(null);
   const [formData, setFormData] = useState({
     patientName: '', requesterName: '',
     bloodGroup: '', unitsNeeded: '',
@@ -15,7 +20,7 @@ function RequestBlood() {
   });
   const [errors, setErrors] = useState({});
   const [submitted, setSubmitted] = useState(false);
-  const [allRequests, setAllRequests] = useState(bloodRequests);
+  const [allRequests, setAllRequests] = useState([]);
 
   const urgencyConfig = {
     All: { color: '#64748b', bg: '#f1f5f9' },
@@ -43,6 +48,21 @@ function RequestBlood() {
       : true;
     return matchFilter && matchGroup;
   });
+    
+ 
+
+const loadRequests = async () => {
+  try {
+    const res = await fetch(`${API}/requests`);
+    setAllRequests(await res.json());
+  } catch (err) {
+    console.error('Could not load requests', err);
+  }
+};
+
+useEffect(() => {
+  loadRequests();
+}, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -76,30 +96,36 @@ function RequestBlood() {
     return e;
   };
 
-  const handleSubmit = () => {
-    const errs = validate();
-    if (Object.keys(errs).length > 0) {
-      setErrors(errs);
+const handleSubmit = async () => {
+  const errs = validate();
+  if (Object.keys(errs).length > 0) {
+    setErrors(errs);
+    return;
+  }
+
+  try {
+    const res = await fetch(`${API}/requests`, {
+      method: 'POST',
+     headers: { 'Content-Type': 'application/json', ...authHeaders() },
+      body: JSON.stringify(formData)
+    });
+    if (!res.ok) {
+      const data = await res.json();
+      setErrors({ contactNumber: data.message });
       return;
     }
-    const newRequest = {
-      id: allRequests.length + 1,
-      ...formData,
-      status: 'Pending',
-      createdAt: new Date()
-        .toISOString().split('T')[0]
-    };
-    setAllRequests(prev => [newRequest, ...prev]);
+    await loadRequests();
     setSubmitted(true);
     setShowForm(false);
     setFormData({
-      patientName: '', requesterName: '',
-      bloodGroup: '', unitsNeeded: '',
-      hospitalName: '', city: '',
-      contactNumber: '', reason: '',
-      urgencyLevel: 'Normal'
+      patientName: '', requesterName: '', bloodGroup: '',
+      unitsNeeded: '', hospitalName: '', city: '',
+      contactNumber: '', reason: '', urgencyLevel: 'Normal'
     });
-  };
+  } catch (err) {
+    setErrors({ contactNumber: 'Server not reachable' });
+  }
+};
 
   const inp = (field) => ({
     width: '100%',
@@ -709,7 +735,7 @@ function RequestBlood() {
                 statusConfig[req.status]
                 || statusConfig.Pending;
               return (
-                <div key={req.id} style={{
+                <div key={req._id} style={{
                   backgroundColor: 'white',
                   borderRadius: '18px',
                   padding: '22px 26px',
@@ -823,7 +849,7 @@ function RequestBlood() {
                         fontSize: '13px',
                         color: '#64748b'
                       }}>
-                        📅 {req.createdAt}
+                        📅 {String(req.createdAt).slice(0, 10)}
                       </span>
                     </div>
                   </div>
@@ -843,7 +869,13 @@ function RequestBlood() {
                         '0 3px 10px rgba(220,38,38,0.3)',
                       flexShrink: 0,
                       whiteSpace: 'nowrap'
-                    }}>
+                    }}   onClick={() => setContact({
+    name: req.requesterName,
+    phone: req.contactNumber,
+    bloodGroup: req.bloodGroup,
+    subtitle: `Patient ${req.patientName} at ${req.hospitalName}, ${req.city}`,
+    message: `I can donate ${req.bloodGroup} blood for ${req.patientName}.`
+  })}>
                       📞 Contact
                     </button>
                   )}
@@ -867,6 +899,7 @@ function RequestBlood() {
           </div>
         )}
       </div>
+      <ContactModel person={contact} onClose={() => setContact(null)} />
     </div>
   );
 }
